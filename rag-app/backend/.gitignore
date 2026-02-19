@@ -1,8 +1,21 @@
+# Python
 venv/
-.env
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Node
 node_modules/
-rag-app/backend/venv/
-rag-app/frontend/node_modules/
-data/faiss_index/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
