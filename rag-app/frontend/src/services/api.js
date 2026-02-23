@@ -30,6 +30,25 @@ export async function sendMessage(question) {
 }
 
 /**
+ * Delete an uploaded document.
+ * @param {string} filename
+ * @returns {Promise<{filename: string, status: string}>}
+ */
+export async function deleteDocument(filename) {
+  const { data } = await API.delete(`/documents/${encodeURIComponent(filename)}`);
+  return data;
+}
+
+/**
+ * List all uploaded documents.
+ * @returns {Promise<{documents: Array}>}
+ */
+export async function listDocuments() {
+  const { data } = await API.get('/documents');
+  return data;
+}
+
+/**
  * Health check.
  * @returns {Promise<{status: string, uploaded_files: string[], index_ready: boolean}>}
  */

@@ -48,6 +48,15 @@ class VectorStore:
             return []
         return self._store.similarity_search(query, k=k or settings.TOP_K)
 
+    def clear(self) -> None:
+        """Remove the entire index from memory and disk."""
+        self._store = None
+        index_path = settings.faiss_abs_path
+        if (index_path / "index.faiss").exists():
+            import shutil
+            shutil.rmtree(str(index_path), ignore_errors=True)
+            index_path.mkdir(parents=True, exist_ok=True)
+
     @property
     def is_ready(self) -> bool:
         return self._store is not None

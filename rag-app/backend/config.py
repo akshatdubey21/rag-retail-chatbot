@@ -21,8 +21,8 @@ class Settings:
     )
 
     # Text splitting
-    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "500"))
-    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "50"))
+    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1000"))
+    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "200"))
 
     # Paths
     PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
@@ -33,7 +33,7 @@ class Settings:
     MAX_NEW_TOKENS: int = int(os.getenv("MAX_NEW_TOKENS", "512"))
 
     # Number of chunks to retrieve per query
-    TOP_K: int = 4
+    TOP_K: int = int(os.getenv("TOP_K", "6"))
 
     @property
     def faiss_abs_path(self) -> Path:

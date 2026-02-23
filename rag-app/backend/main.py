@@ -2,6 +2,7 @@
 FastAPI application — exposes /upload, /chat, and /health endpoints.
 """
 
+import logging
 import shutil
 import uuid
 from pathlib import Path
@@ -12,6 +13,11 @@ from pydantic import BaseModel
 
 from config import settings
 from rag_pipeline import RAGPipeline
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
+)
 
 # ------------------------------------------------------------------
 # App bootstrap
@@ -63,6 +69,15 @@ class HealthResponse(BaseModel):
     index_ready: bool
 
 
+class DeleteResponse(BaseModel):
+    filename: str
+    status: str
+
+
+class DocumentListResponse(BaseModel):
+    documents: list
+
+
 # ------------------------------------------------------------------
 # Endpoints
 # ------------------------------------------------------------------
@@ -75,6 +90,23 @@ async def health_check():
         uploaded_files=pipeline.uploaded_files,
         index_ready=pipeline.vector_store.is_ready,
     )
+
+
+@app.get("/documents", response_model=DocumentListResponse)
+async def list_documents():
+    """Return a list of all uploaded documents."""
+    files = []
+    upload_dir = settings.upload_abs_path
+    for f in upload_dir.iterdir():
+        if f.name.lower().endswith(".pdf"):
+            import os
+            stat = f.stat()
+            files.append({
+                "filename": f.name,
+                "size": stat.st_size,
+                "uploaded_at": stat.st_mtime,
+            })
+    return DocumentListResponse(documents=files)
 
 
 @app.post("/upload", response_model=UploadResponse)
@@ -105,6 +137,18 @@ async def chat(request: ChatRequest):
     try:
         result = pipeline.query(request.question)
         return ChatResponse(**result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.delete("/documents/{filename}", response_model=DeleteResponse)
+async def delete_document(filename: str):
+    """Delete a specific uploaded document and rebuild the index."""
+    try:
+        result = pipeline.delete_pdf(filename)
+        return DeleteResponse(**result)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
